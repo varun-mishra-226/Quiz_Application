@@ -29,11 +29,13 @@ import java.util.regex.Pattern;
 
 public class Questions extends AppCompatActivity {
 
-    TextView tvQuestionCount, tvValid;
+    TextView tvQuestionCount, tvValid, tvDone;
     ImageView ivQuestion;
     Button btn1, btn2, btn3, btn4;
     int chosen, locCorrect, selCorr=0, done=0;
     String[] options = new String[4];
+    boolean optSelected;
+    String score;
 
     ArrayList<String> names = new ArrayList<String>();
     ArrayList<String> image = new ArrayList<String>();
@@ -57,7 +59,7 @@ public class Questions extends AppCompatActivity {
 
     public void newQuestion (){
         try {
-            tvQuestionCount.setText("Score: "+String.valueOf(selCorr)+"/"+String.valueOf(done));
+            optSelected = false;
 
             Random random = new Random();
             chosen = random.nextInt(names.size());
@@ -88,11 +90,6 @@ public class Questions extends AppCompatActivity {
                 }
             }
 
-            /*btn1.setBackgroundResource(R.drawable.layout_button);
-            btn2.setBackgroundResource(R.drawable.layout_button);
-            btn3.setBackgroundResource(R.drawable.layout_button);
-            btn4.setBackgroundResource(R.drawable.layout_button);*/
-
             btn1.setText(options[0]);
             btn2.setText(options[1]);
             btn3.setText(options[2]);
@@ -104,33 +101,46 @@ public class Questions extends AppCompatActivity {
     }
 
     public void cartoonSelect (final View view){
-        done += 1;
-        final boolean corr;
-        if (view.getTag().toString().equals(Integer.toString(locCorrect))) {
-            selCorr += 1;
-            corr = true;
-        }
-        else {
-            corr = false;
-        }
-
-        new CountDownTimer(250, 250) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                view.setBackgroundResource(R.drawable.layout_button_click);
-                if (corr)
-                    tvValid.setText("Correct!!");
-                else
-                    tvValid.setText("Incorrect!!");
+        if (!optSelected){
+            optSelected = true;
+            done += 1;
+            final boolean corr;
+            if (view.getTag().toString().equals(Integer.toString(locCorrect))) {
+                selCorr += 1;
+                corr = true;
+            }
+            else {
+                corr = false;
             }
 
-            @Override
-            public void onFinish() {
-                tvValid.setText("");
-                view.setBackgroundResource(R.drawable.layout_button);
-                newQuestion();
+            score = "Score: "+String.valueOf((float)selCorr/done);
+            tvQuestionCount.setText(score);
+            tvDone.setText("Done: "+String.valueOf(done));
+
+            new CountDownTimer(250, 250) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    view.setBackgroundResource(R.drawable.layout_button_click);
+                    if (corr)
+                        tvValid.setText("Correct!!");
+                    else
+                        tvValid.setText("Incorrect!!");
+                }
+
+                @Override
+                public void onFinish() {
+                    tvValid.setText("");
+                    view.setBackgroundResource(R.drawable.layout_button);
+                    newQuestion();
+                }
+            }.start();
+
+            if (done==5){
+                Intent intent = new Intent(Questions.this, Result.class);
+                intent.putExtra("Result", score);
+                startActivity(intent);
             }
-        }.start();
+        }
     }
 
     @Override
@@ -141,6 +151,7 @@ public class Questions extends AppCompatActivity {
         ivQuestion = (ImageView) findViewById(R.id.ivQuestion);
         tvQuestionCount = (TextView)findViewById(R.id.tvQuesCount);
         tvValid = (TextView) findViewById(R.id.tvValid);
+        tvDone = (TextView) findViewById(R.id.tvCount);
 
         btn1 = (Button) findViewById(R.id.btn1);
         btn2 = (Button) findViewById(R.id.btn2);
